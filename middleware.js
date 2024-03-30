@@ -1,28 +1,24 @@
-const express=  require("express");
-const app = express();
-
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = require("./config");
-const authMiddleWare = (req,res,next)=>{
-    const authHeader = req.headers.authorization;
+const  JWT_SECRET  = require("./config");
 
-    if(!authHeader || !authHeader.startsWith("Bearer")){
-        return res.status(403).json({})
-    }
+const authMiddleWare = (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-    const token = authHeader.split(' ')[1]
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+        console.error("Invalid or missing Authorization header");
+    return res.status(403).json({ message: "Unauthorized" });
+  }
 
-    try{
-        const decoded = jwt.verify(token,JWT_SECRET);
-        req.userId = decoded.userId;
+  const token = authHeader.split(" ")[1];
 
-        next();
-    }catch(err){
-        console.log(err);
-    }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.userId;
+    next();
+  } catch (err) {
+    console.error("JWT verification error:", err);
+    return res.status(403).json({ message: "Forbidden" });
+  }
+};
 
-}
-
-module.exports = {
-    authMiddleWare
-}
+module.exports = authMiddleWare;
